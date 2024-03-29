@@ -1,0 +1,113 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body,
+#root {
+  font-size: 62.5%; /* makes 1rem 10px */
+  height: 100%;
+}
+
+#error-page {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  gap: 2rem;
+  font-size: 2rem;
+  background-color: #f4f4f4;
+  h1 {
+    font-size: 5rem;
+  }
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.custom-file-upload {
+  cursor: pointer;
+  background-color: white;
+  padding: 1rem 2rem;
+  color: #435334;
+  width: "fit-content";
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.is-typing {
+  justify-content: space-around;
+  display: flex;
+  margin-top: 10px;
+  width: fit-content;
+  gap: 1rem;
+}
+.jump1,
+.jump2,
+.jump3,
+.jump4,
+.jump5 {
+  width: 4px;
+  height: 4px;
+  border-radius: 100%;
+  background-color: black;
+}
+.jump1 {
+  animation: typing 1.5s linear infinite;
+  animation-delay: 01.1s;
+}
+
+.jump2 {
+  animation: typing 1.5s linear infinite;
+  animation-delay: 01.2s;
+}
+
+.jump3 {
+  animation: typing 1.5s linear infinite;
+  animation-delay: 01.3s;
+}
+
+.jump4 {
+  animation: typing 1.5s linear infinite;
+  animation-delay: 01.4s;
+}
+
+.jump5 {
+  animation: typing 1.5s linear infinite;
+  animation-delay: 1.5s;
+}
+
+@keyframes typing {
+  0% {
+    transform: translateY(0px);
+  }
+
+  25% {
+    transform: translateY(0px);
+  }
+
+  35% {
+    transform: translateY(15px);
+  }
+
+  45% {
+    transform: translateY(0px);
+  }
+
+  60% {
+    transform: translateY(-15px);
+  }
+
+  75% {
+    background-color: white;
+    transform: translateY(0px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
