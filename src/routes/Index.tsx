@@ -19,11 +19,14 @@ const Index = () => {
   const collId = useSelector(
     (state: RootState) => state.collection.selectedCollectionId
   );
+  const colleName = useSelector(
+    (state: RootState) => state.collection.seletectedCollectioName
+  );
   const [sources, setSources] = useState<string[]>([]);
   console.log(sources);
   return (
     <Stack bg={"#fcf2e3"} w={"100%"}>
-      <TextFloat />
+      <TextFloat name={colleName} />
       <Flex h={"100%"} m={"2rem"} p={"2rem"} gap={"md"}>
         <Stack style={{ flex: 1, overflow: "scroll" }}>
           {/* <Stack pos={"relative"} flex={1}>
@@ -39,9 +42,9 @@ const Index = () => {
             </Stack>
           )}
         </Stack>
-        <Stack bg={"#EAF2E1"} p={"2rem"}>
+        {/* <Stack bg={"#EAF2E1"} p={"2rem"}>
           <Text size="md">Retrieved from: </Text>
-        </Stack>
+        </Stack> */}
       </Flex>
     </Stack>
   );

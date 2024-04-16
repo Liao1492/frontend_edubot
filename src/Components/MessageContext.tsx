@@ -1,15 +1,23 @@
 import { useRef, useState, useEffect } from "react";
 import MessageBlock from "./MessageBlock";
 import { Message } from "../routes/Index";
+import { useDisclosure } from "@mantine/hooks";
+import { BsCircleFill } from "react-icons/bs";
+
 import {
+  Switch,
   LoadingOverlay,
   Stack,
   Text,
   Flex,
   UnstyledButton,
   Textarea,
+  Slider,
 } from "@mantine/core";
+
 import { IoIosSend } from "react-icons/io";
+import { RootState } from "../store";
+import { useSelector } from "react-redux";
 function extractResponseAndSources(text: string) {
   // Split the text at the "## Response" marker.
   // This will create an array with 2 elements: text before "## Response" and text after it.
@@ -45,25 +53,35 @@ function extractTextBetweenParentheses(str: string) {
   }
 }
 
+const marks = [
+  { value: 2, label: "2" },
+  { value: 4, label: "4" },
+  { value: 8, label: "md" },
+  { value: 75, label: "lg" },
+  { value: 100, label: "xl" },
+];
 interface IProps {
   setSources: (sources: string[]) => void;
   collection_id: number;
 }
 const MessageContext = ({ setSources, collection_id }: IProps) => {
   const websocket = useRef<WebSocket | null>(null);
+  const [opened, handlers] = useDisclosure(false);
   const [error, setError] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-
+  const selectedModel = useSelector(
+    (state: RootState) => state.collection.modelSelection
+  );
   const [connecting, setConnecting] = useState(true);
   const [awaitingMessage, setAwaitingMessage] = useState(false);
-
+  const [topK, setTopK] = useState(16);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const setupWebsocket = () => {
     const authToken = localStorage.getItem("eduAccessToken");
     setConnecting(true);
 
     websocket.current = new WebSocket(
-      `ws://localhost:8000/ws/collections/${collection_id}/query/?token=${authToken}`
+      `ws://localhost:8000/ws/collections/${collection_id}/query/?token=${authToken}&model=${selectedModel}`
     );
 
     websocket.current.onopen = (event) => {
@@ -101,10 +119,10 @@ const MessageContext = ({ setSources, collection_id }: IProps) => {
 
     websocket.current.onclose = (event) => {
       if (event.code === 4000) {
-        setError(true);
         setConnecting(false);
         setAwaitingMessage(false);
       }
+      setError(true);
       console.log("WebSocket closed:", event);
     };
 
@@ -127,9 +145,48 @@ const MessageContext = ({ setSources, collection_id }: IProps) => {
 
   return (
     <>
+      <Flex align={"center"} pos={"absolute"} top={100} left={480} gap={"10"}>
+        <BsCircleFill fill={error ? "red" : "green"} size={15} />
+        <Text size="sm" mr={"md"}>
+          {error ? "Disconnected" : "Connected"}
+        </Text>
+      </Flex>
+      <Flex pos={"absolute"} top={100} right={40} style={{ zIndex: 1000 }}>
+        <Stack gap={"10"}>
+          <Flex>
+            <Text size="sm" mr={"md"}>
+              Enhanced Mode
+            </Text>
+            <Switch
+              size="xl"
+              onLabel="ON"
+              offLabel="OFF"
+              checked={opened}
+              onChange={() => handlers.toggle()}
+            />
+          </Flex>
+          {opened && (
+            <Stack>
+              <Text size="sm" mr={"md"}>
+                Top-K Retrieval
+              </Text>
+              <Slider
+                max={30}
+                color="green"
+                defaultValue={topK}
+                onChange={(value) => setTopK(value)}
+                // label={(val) => marks.find((mark) => mark.value === val)!.label}
+                step={2}
+                // marks={marks}
+                // styles={{ markLabel: { display: "none" } }}
+              />
+            </Stack>
+          )}
+        </Stack>
+      </Flex>
       <Stack
         pos={"relative"}
-        style={{ overflow: "scroll" }}
+        // style={{ overflow: "scroll" }}
         flex={1}
         mb={"40px"}
       >
@@ -143,15 +200,16 @@ const MessageContext = ({ setSources, collection_id }: IProps) => {
             left: 0,
           }}
         >
-          <Text size="sm">{error ? "Disconnected" : "Connected"}</Text>
           <LoadingOverlay
             bg={"rgb(252, 242, 227)"}
             visible={connecting}
             zIndex={1000}
             overlayProps={{ radius: "sm", blur: 5, bg: "rgb(252, 242, 227)" }}
           />
-          {messages.map((mes) => {
-            return <MessageBlock sender={mes.sender} message={mes.message} />;
+          {messages.map((mes, i) => {
+            return (
+              <MessageBlock key={i} sender={mes.sender} message={mes.message} />
+            );
           })}
         </Stack>
       </Stack>
@@ -191,7 +249,11 @@ const MessageContext = ({ setSources, collection_id }: IProps) => {
                   { sender: "bot", message: "" },
                 ]);
                 websocket.current?.send(
-                  JSON.stringify({ query: textRef.current?.value || "" })
+                  JSON.stringify({
+                    query: textRef.current?.value || "",
+                    enhanced: opened ? "Y" : "N",
+                    top_k: topK,
+                  })
                 );
                 textRef.current!.value = "";
               }}

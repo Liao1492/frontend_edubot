@@ -30,6 +30,7 @@ export interface CollectionIn {
 
 export interface CollectionModelSchema {
   id: number;
+  db_storage: string;
   title: string;
   description: string;
   status: CollectionStatus;

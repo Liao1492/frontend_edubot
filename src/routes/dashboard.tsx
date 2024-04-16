@@ -8,7 +8,12 @@ import {
 } from "@mantine/core";
 import { CollectionModelSchema } from "../types";
 import { useEffect, useState } from "react";
-import { setSelectedCollection } from "../store/slices/collectionSlice";
+import {
+  setSelectedCollection,
+  setModel,
+  setStorage,
+  setSelectedCollectionName,
+} from "../store/slices/collectionSlice";
 import { RootState } from "../store";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,11 +21,37 @@ import { getMyCollections, createCollection } from "../api/apis";
 import { BiSolidBookAdd } from "react-icons/bi";
 import ModalAddCollection from "../Components/modals/ModalAddCollection";
 
+const openAiModels = [
+  {
+    name: "gpt-4-0613",
+    desc: "Snapshot of gpt-4 from June 13th 2023 with improved function calling support.",
+  },
+  {
+    name: "gpt-3.5-turbo-0125",
+    desc: "The latest GPT-3.5 Turbo model with higher accuracy at responding in requested formats and a fix for a bug which caused a text encoding issue for non-English language function calls. Returns a maximum of 4,096 output tokens.",
+  },
+  {
+    name: "gpt-3.5-turbo-instruct",
+    desc: "Efficient Instruction Following: The primary strength of GPT-3.5-turbo-instruct lies in its ability to follow instructions with precision and efficiency. Whether needed to complete a specific task, answer questions, or perform text-based functions, the model excels at promptly executing commands",
+  },
+];
+
+const allStorage = [
+  { name: "ChromaDB", desc: "Self-Hosted" },
+  { name: "DuckDB", desc: "In-Memory" },
+  { name: "Milvus", desc: "Cloud Solution" },
+];
 const Dashboard = () => {
   const [allCollections, setAllCollections] = useState<CollectionModelSchema[]>(
     []
   );
+  const storageSelection = useSelector(
+    (root: RootState) => root.collection.storageSelection
+  );
   const [openModal, setOpenModal] = useState(false);
+  const selectedModel = useSelector(
+    (state: RootState) => state.collection.modelSelection
+  );
   const fetchAllCollection = async () => {
     const accessToken = localStorage.getItem("eduAccessToken");
     const response = await getMyCollections(accessToken!);
@@ -32,10 +63,11 @@ const Dashboard = () => {
     const response = await createCollection(
       { title: title, description: desc },
       file,
+      storageSelection,
       accessToken!
     );
     console.log(response.data);
-    setTimeout(fetchAllCollection, 1000);
+    setTimeout(fetchAllCollection, 3000);
   };
   useEffect(() => {
     fetchAllCollection();
@@ -44,7 +76,7 @@ const Dashboard = () => {
     (state: RootState) => state.collection.selectedCollectionId
   );
   const dispatch = useDispatch();
-  console.log(selectedColl);
+  console.log(selectedModel);
   return (
     <Stack bg={"rgb(234, 242, 225)"} w={"100%"} h={"100%"} p="2rem">
       <Flex justify={"space-between"} align={"center"}>
@@ -103,7 +135,10 @@ const Dashboard = () => {
               >
                 {allCollections
                   .filter((coll) => {
-                    return coll.status !== "ERROR";
+                    return (
+                      coll.status !== "ERROR" &&
+                      coll.db_storage === storageSelection
+                    );
                   })
                   .map((coll, i) => {
                     return (
@@ -113,6 +148,7 @@ const Dashboard = () => {
                         w={"100%"}
                         onClick={() => {
                           dispatch(setSelectedCollection(coll.id));
+                          dispatch(setSelectedCollectionName(coll.title));
                         }}
                       >
                         <Stack
@@ -147,8 +183,114 @@ const Dashboard = () => {
             </Stack>
           </Stack>
           <Stack flex={1}>
-            <Stack></Stack>
-            <Stack></Stack>
+            <Stack
+              style={{ borderRadius: "1.6rem" }}
+              bg={"white"}
+              flex={1}
+              p="2rem"
+            >
+              <Text size="xl" fw={700}>
+                LLM Models
+              </Text>
+              <Stack flex={1} pos={"relative"}>
+                <Stack
+                  pos={"absolute"}
+                  h={"100%"}
+                  gap={"2rem"}
+                  w={"100%"}
+                  style={{ overflow: "scroll", top: "0", left: "0" }}
+                >
+                  {openAiModels.map((model, i) => {
+                    return (
+                      <UnstyledButton
+                        key={i}
+                        w={"100%"}
+                        onClick={() => {
+                          dispatch(setModel(model.name));
+                        }}
+                      >
+                        <Stack
+                          w="100%"
+                          p={"xl"}
+                          bg={
+                            selectedModel === model.name
+                              ? "rgb(234, 242, 225)"
+                              : "whitesmoke"
+                          }
+                          style={{
+                            borderRadius: "1.6rem",
+                            border: "1px solid #D6BC97",
+                          }}
+                        >
+                          <Tooltip label={model.desc} multiline w={"50%"}>
+                            <Text size="md">{model.name}</Text>
+                          </Tooltip>
+                        </Stack>
+                      </UnstyledButton>
+                    );
+                  })}
+                </Stack>
+              </Stack>
+            </Stack>
+            <Stack
+              style={{ borderRadius: "1.6rem" }}
+              bg={"white"}
+              flex={1}
+              p="2rem"
+            >
+              <Text size="xl" fw={700}>
+                Storage Option
+              </Text>
+              <Stack flex={1} pos={"relative"}>
+                <Stack
+                  pos={"absolute"}
+                  h={"100%"}
+                  gap={"2rem"}
+                  w={"100%"}
+                  style={{ overflow: "scroll", top: "0", left: "0" }}
+                >
+                  {allStorage.map((s, i) => {
+                    const storage = s.name.toLocaleLowerCase();
+                    return (
+                      <UnstyledButton
+                        key={i}
+                        w={"100%"}
+                        onClick={() => {
+                          dispatch(
+                            setStorage(
+                              storage.toLocaleLowerCase() as
+                                | "chromadb"
+                                | "duckdb"
+                                | "milvus"
+                            )
+                          );
+                        }}
+                      >
+                        <Stack
+                          w="100%"
+                          p={"xl"}
+                          bg={
+                            storageSelection === storage
+                              ? "rgb(234, 242, 225)"
+                              : "whitesmoke"
+                          }
+                          style={{
+                            borderRadius: "1.6rem",
+                            border: "1px solid #D6BC97",
+                          }}
+                        >
+                          <Tooltip label={s.desc} multiline>
+                            <Text size="md">{s.name}</Text>
+                          </Tooltip>
+
+                          {/* <Text size="md">{model.name}</Text> */}
+                        </Stack>
+                      </UnstyledButton>
+                    );
+                  })}
+                </Stack>
+              </Stack>
+            </Stack>
           </Stack>
         </Flex>
       </Stack>

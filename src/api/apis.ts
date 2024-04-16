@@ -11,13 +11,17 @@ const APP_URL = "http://localhost:8000";
 export const createCollection = async (
   collectionData: CollectionIn,
   files: File | null,
+  storage: string,
   authToken: string
 ): Promise<AxiosResponse<CollectionModelSchema>> => {
   const formData = new FormData();
   console.log(collectionData);
   formData.append("title", collectionData.title);
   formData.append("description", collectionData.description);
+
   if (files !== null) formData.append("files", files);
+  formData.append("storage", storage);
+
   //   if (files) {
   //     for (let i = 0; i < files.length; i++) {
   //       formData.append("files", files[i]);

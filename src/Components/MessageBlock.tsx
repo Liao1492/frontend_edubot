@@ -26,7 +26,9 @@ const MessageBlock = ({ sender, message }: IProps) => {
           {sender === "bot" ? "EduBot" : "You"} :
         </Text>
         {!!message ? (
-          <Text size="md">{message}</Text>
+          <Text style={{ whiteSpace: "pre-line" }} size="md">
+            {message}
+          </Text>
         ) : (
           <div className="is-typing">
             <div className="jump1"></div>

@@ -46,7 +46,7 @@ const Sidebar = () => {
       );
       setFile(null);
       setTimeout(() => {
-        fetchCollectionInfo("35", accessToken!);
+        fetchCollectionInfo(selectedColl!, accessToken!);
       }, 1000);
       console.log(response);
     } catch (e) {

@@ -7,6 +7,8 @@ import {
   Stack,
   TextInput,
   Button,
+  Slider,
+  SegmentedControl,
 } from "@mantine/core";
 import FileUpload from "../FileUpload";
 
@@ -18,7 +20,15 @@ const ModalAddCollection = (props: IProps) => {
   const [file, setFile] = React.useState<File | null>(null);
   const [title, setTile] = React.useState<string>("");
   const [desc, setDesc] = React.useState<string>("");
-
+  const [value, setValue] = React.useState("512");
+  const marks = [
+    { value: 64, label: "64" },
+    { value: 128, label: "128" },
+    { value: 256, label: "256" },
+    { value: 512, label: "512" },
+    { value: 1024, label: "1024" },
+    { value: 2048, label: "2048" },
+  ];
   return (
     <Modal
       {...modalProps}
@@ -59,6 +69,24 @@ const ModalAddCollection = (props: IProps) => {
               placeholder="Description"
               size={"lg"}
             />
+            <Stack>
+              <Text size="md" c={"white"} fw={700}>
+                Chunk Size
+              </Text>
+              <SegmentedControl
+                value={value}
+                onChange={setValue}
+                data={[
+                  { label: "128", value: "128" },
+
+                  { label: "256", value: "256" },
+                  { label: "512", value: "512" },
+                  { label: "1024", value: "1024" },
+                ]}
+              />
+            </Stack>
+
+            {/* </Stack> */}
             <FileUpload file={file} setFile={setFile} />
             <Stack>
               <Button

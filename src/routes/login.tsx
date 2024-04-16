@@ -33,6 +33,8 @@ const login = () => {
         { username, password }
       );
       localStorage.setItem("eduAccessToken", response.data.access);
+      localStorage.setItem("eduAccessTokenTimeStamp", Date.now().toString());
+
       navigate("/");
       //   onLogin(response.data.access);
     } catch (error) {
